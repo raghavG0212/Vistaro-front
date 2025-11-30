@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+.font-times{
+    font-family: "Times New Roman", serif;
+}
+
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-bodoni {
+  font-family: 'Bodoni Moda', serif;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-garamond {
+  font-family: 'EB Garamond', serif;
+}
+
+/* Gold color matching your V logo */
+.text-gold {
+  color: #d4af37;
+}

@@ -1,0 +1,120 @@
+/* Heading.module.css - self-contained, scoped to the component */
+
+/* overall container - lines left & right + centered title */
+.container {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 1rem 0;
+	padding: 0 0.5rem;
+	justify-content: center;
+}
+
+/* decorative horizontal lines left & right */
+.rule {
+	flex: 1 1 0;
+	height: 2px;
+	background: #111;
+	/* dark line; change for dark mode if needed */
+	opacity: 0.95;
+	border-radius: 2px;
+}
+
+/* inner box that gets the animated gradient frame */
+.box {
+	position: relative;
+	border-radius: 10px;
+	padding: 0.4rem 1rem;
+	/* space around the heading text */
+	background: white;
+	/* page background — change if you use dark mode */
+	min-width: 220px;
+	display: inline-block;
+	box-sizing: border-box;
+	/* subtle base border so layout is stable even before pseudo renders */
+	border: 2px solid rgba(0, 0, 0, 0.06);
+	transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* bring the text above the animated pseudo */
+.box>* {
+	position: relative;
+	z-index: 2;
+}
+
+/* animated gradient "frame" using ::before + masking so only border shows */
+.box::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 3px;
+	/* thickness of animated frame */
+	background: linear-gradient(135deg,
+			#ff3d81,
+			#ff8c00,
+			#3fd6c6,
+			#6a4cff,
+			#ff3d81);
+	background-size: 300% 300%;
+	z-index: 1;
+	/* sits beneath text but above .box background */
+	pointer-events: none;
+
+	/* mask center so only frame shows (works cross-browser reasonably) */
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+
+	/* animation */
+	animation: gradientShift 4s linear infinite;
+}
+
+/* small hover polish: lift the element and intensify the glow */
+.box:hover {
+	transform: translateY(-6px);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* title text style */
+.title {
+	font-family: "Playfair Display", "Times New Roman", serif;
+	font-weight: 700;
+	font-size: 1.15rem;
+	/* ~18.4px */
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	text-align: center;
+	margin: 0;
+	color: #111;
+}
+
+/* animation keyframes */
+@keyframes gradientShift {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	50% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* responsive: slightly larger title on medium screens */
+@media (min-width: 768px) {
+	.title {
+		font-size: 1.5rem;
+	}
+
+	/* ~24px */
+	.box {
+		min-width: 260px;
+		padding: 0.5rem 1.25rem;
+	}
+}
