@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API = "/api/v1/booking";
 
-export const createBooking = (data) => axios.post(`${API}/add`, data);
+export const createBooking = (data) => axios.post(`${API}`, data);
 
 export const getBookingById = (id) => axios.get(`${API}/id/${id}`);
 

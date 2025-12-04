@@ -29,3 +29,30 @@
 .text-gold {
   color: #d4af37;
 }
+
+
+/* Make menu items dark & visible */
+.chakra-menu__menuitem {
+  background-color: #1A202C !important;
+  color: white !important;
+}
+
+.chakra-menu__menuitem:hover {
+  background-color: #2D3748 !important;
+  color: white !important;
+}
+
+.remove-food-btn {
+  padding: 0.45rem 1rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  min-width: 90px !important;
+}
+
+/* FIX Create Event menu hover contrast */
+.chakra-menu__menuitem[role="menuitem"] {
+  background-color: #1f2634 !important;
+  /* normal dark */
+  color: #ffffff !important;
+  /* white text */
+}

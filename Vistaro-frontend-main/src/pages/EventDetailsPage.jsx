@@ -13,55 +13,68 @@ import {
 	Divider,
 	Icon,
 	useColorModeValue,
+	Modal,
+	ModalOverlay,
+	ModalContent,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	ModalCloseButton,
+	FormControl,
+	FormLabel,
+	Input,
+	Select,
+	Switch,
 } from "@chakra-ui/react";
 import { StarIcon } from "@chakra-ui/icons";
-import { FiPlay, FiMapPin, FiCalendar, FiUsers } from "react-icons/fi";
+import { FiPlay, FiMapPin, FiCalendar, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { IoPerson } from "react-icons/io5";
-import { getEventById } from "../apis/eventApi";
+import { toast } from "react-toastify";
+
+import { getEventById, updateEvent, deleteEvent } from "../apis/eventApi";
 import { getMovieByEventId } from "../apis/movieApi";
 import { getSportsByEventId } from "../apis/sportApi";
 import { getGeneralEventByEventId } from "../apis/generalEventDetailsApi";
 import Loader from "../components/Loader";
+import { useSelector } from "react-redux";
 
 export default function EventDetailsPage() {
 	const { eventId } = useParams();
 	const navigate = useNavigate();
-
 	const [event, setEvent] = useState(null);
 	const [details, setDetails] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [eventtype, setEventType] = useState("");
+    const role = useSelector((state)=>state.user?.role);
+	const user = useSelector((state)=> state.user);
+	const isAdmin = (role==="ADMIN") ? true : false;
+	const [isEditOpen, setEditOpen] = useState(false);
+	const [isDeleteOpen, setDeleteOpen] = useState(false);
+	const isLoggedIn = !!user?.isAuthenticated;
 
-	// Dummy offers (can be replaced with real API later)
+	const [editForm, setEditForm] = useState({
+		eventId: "",
+		title: "",
+		description: "",
+		category: "",
+		subCategory: "",
+		bannerUrl: "",
+		thumbnailUrl: "",
+		startTime: "",
+		endTime: "",
+	});
+
 	const offers = useMemo(
 		() => [
-			{
-				id: 1,
-				title: "Bank Offer",
-				desc: "Get 10% off up to ₹200 on XYZ Bank Credit Cards.",
-				tag: "Limited Time",
-			},
-			{
-				id: 2,
-				title: "Wallet Cashback",
-				desc: "Flat ₹100 cashback on ABC Wallet on tickets above ₹500.",
-				tag: "Cashback",
-			},
-			{
-				id: 3,
-				title: "Combo Offer",
-				desc: "Movie ticket + Popcorn + Drink at just ₹399.",
-				tag: "Food & Beverages",
-			},
+			{ id: 1, title: "Bank Offer", desc: "Get 10% off on XYZ Bank Cards.", tag: "Limited Time" },
+			{ id: 2, title: "Wallet Cashback", desc: "Flat ₹100 cashback via ABC Wallet.", tag: "Cashback" },
+			{ id: 3, title: "Combo Deal", desc: "Ticket + Popcorn @ ₹399.", tag: "Food" },
 		],
 		[]
 	);
 	const [offerIndex, setOfferIndex] = useState(0);
 
-	// -------------------------------
-	//   LOAD EVENT + SUB DETAILS
-	// -------------------------------
 	useEffect(() => {
 		const loadDetails = async () => {
 			try {
@@ -86,19 +99,14 @@ export default function EventDetailsPage() {
 						detailsRes = await getGeneralEventByEventId(eventId);
 						setEventType("EVENT");
 						break;
-					default:
-						console.warn("Unknown category:", eventRes.data.category);
 				}
-
 				setDetails(detailsRes?.data || null);
 			} catch (err) {
-				console.error(err);
 				setError("Failed to load event details");
 			} finally {
 				setLoading(false);
 			}
 		};
-
 		loadDetails();
 	}, [eventId]);
 
@@ -128,16 +136,57 @@ export default function EventDetailsPage() {
 		});
 	};
 
-	const handleBookTickets = () => {
-		navigate(`/eventslots/${eventId}`);
+	const handlePrevOffer = () => setOfferIndex((i) => (i === 0 ? offers.length - 1 : i - 1));
+	const handleNextOffer = () => setOfferIndex((i) => (i === offers.length - 1 ? 0 : i + 1));
+
+	const openEditModal = () => {
+		setEditForm({
+			eventId: event.eventId,
+			title: event.title,
+			description: event.description,
+			category: event.category,
+			subCategory: event.subCategory,
+			bannerUrl: event.bannerUrl,
+			thumbnailUrl: event.thumbnailUrl,
+			startTime: event.startTime ? event.startTime.slice(0, 16) : "",
+			endTime: event.endTime ? event.endTime.slice(0, 16) : "",
+		});
+		setEditOpen(true);
 	};
 
-	const handlePrevOffer = () => {
-		setOfferIndex((i) => (i === 0 ? offers.length - 1 : i - 1));
+	const handleEditChange = (e) => {
+		setEditForm({ ...editForm, [e.target.name]: e.target.value });
 	};
 
-	const handleNextOffer = () => {
-		setOfferIndex((i) => (i === offers.length - 1 ? 0 : i + 1));
+	const handleSubmitEdit = async () => {
+		try {
+			const payload = {
+				...editForm,
+				startTime: new Date(editForm.startTime).toISOString(),
+				endTime: new Date(editForm.endTime).toISOString(),
+			};
+
+			await updateEvent(eventId, payload);
+
+			toast.success("Event updated successfully!");
+			setEditOpen(false);
+
+			const refresh = await getEventById(eventId);
+			setEvent(refresh.data);
+		} catch (err) {
+			toast.error("Failed to update event");
+		}
+	};
+
+	const handleConfirmDelete = async () => {
+		try {
+			await deleteEvent(eventId);
+			toast.success("Event deleted successfully!");
+			setDeleteOpen(false);
+			navigate("/events");
+		} catch (err) {
+			toast.error("Delete failed");
+		}
 	};
 
 	if (loading) return <Loader />;
@@ -145,9 +194,7 @@ export default function EventDetailsPage() {
 	if (error || !event) {
 		return (
 			<Box bg={bgColor} minH="100vh" color="white" p={6}>
-				<Text textAlign="center" mt={10}>
-					{error || "Event not found."}
-				</Text>
+				<Text textAlign="center" mt={10}>{error || "Event not found."}</Text>
 			</Box>
 		);
 	}
@@ -155,33 +202,23 @@ export default function EventDetailsPage() {
 	const isMovie = eventtype === "MOVIE";
 	const isSport = eventtype === "SPORT";
 	const isGeneral = eventtype === "EVENT";
-
-	const castList =
-		isMovie && details && Array.isArray(details.castJson)
-			? details.castJson
-			: [];
-
+	const castList = isMovie && details && Array.isArray(details.castJson) ? details.castJson : [];
 	return (
 		<Box bg={bgColor} minH="100vh" color="white">
-			{/* BANNER */}
-			<Box
-				position="relative"
-				height={{ base: "220px", md: "320px", lg: "360px" }}
-				bg="black"
-			>
-				<Image
-					src={event.bannerUrl}
-					alt={event.title}
-					objectFit="cover"
-					width="100%"
-					height="100%"
-					opacity={0.4}
-				/>
-				<Box
-					position="absolute"
-					inset="0"
-					bgGradient="linear(to-t, rgba(0,0,0,0.9), rgba(0,0,0,0.3))"
-				/>
+			<Box position="relative" height={{ base: "220px", md: "320px", lg: "360px" }} bg="black">
+				<Image src={event.bannerUrl} objectFit="cover" width="100%" height="100%" opacity={0.4} zIndex={5}/>
+				<Box position="absolute" inset="0" bgGradient="linear(to-t, blackAlpha.900, blackAlpha.400)" />
+
+				{isAdmin && (
+					<HStack position="absolute" top="15px" right="15px" spacing={3} zIndex={20}>
+						<Button size="sm" leftIcon={<FiEdit2 />} colorScheme="green" onClick={openEditModal}>
+							Edit
+						</Button>
+						<Button size="sm" leftIcon={<FiTrash2 />} colorScheme="red" onClick={() => setDeleteOpen(true)}>
+							Delete
+						</Button>
+					</HStack>
+				)}
 
 				{/* OVERLAY CONTENT */}
 				<Flex
@@ -344,7 +381,28 @@ export default function EventDetailsPage() {
 								border="1px solid"
 								borderColor={borderClr}
 							>
-								<Flex
+								{isAdmin ? (<Flex
+									justify="space-between"
+									align={{ base: "flex-start", md: "center" }}
+									direction={{ base: "column", md: "row" }}
+									gap={3}
+								>
+									<Box>
+										<Text fontWeight="bold" fontSize="lg">
+											Create Eventslot
+										</Text>
+										<Text fontSize="sm" color="gray.300">
+											Add Slot Details On The Next Step
+										</Text>
+									</Box>
+									<Button
+										colorScheme="purple"
+										size="md"
+										onClick={()=> navigate(`/eventslot/add/${eventId}`)}
+									>
+										Add Slot
+									</Button>
+								</Flex>) : (<Flex
 									justify="space-between"
 									align={{ base: "flex-start", md: "center" }}
 									direction={{ base: "column", md: "row" }}
@@ -358,14 +416,21 @@ export default function EventDetailsPage() {
 											Select showtime and seats on the next step.
 										</Text>
 									</Box>
-									<Button
-										colorScheme="red"
-										size="md"
-										onClick={handleBookTickets}
-									>
-										Book Tickets
-									</Button>
-								</Flex>
+										{isLoggedIn ? (<Button
+											colorScheme="purple"
+											size="md"
+											onClick={() => navigate(`/eventslots/${eventId}`)}
+										>
+											Book Tickets
+										</Button>) : (<Button
+											colorScheme="purple"
+											size="md"
+											onClick={() => {navigate(`/login`);
+											toast.warning("Login to book tickets.")}}
+										>
+											Book Tickets
+										</Button>)}
+								</Flex>)}
 							</Box>
 						</Stack>
 					</Box>
@@ -420,11 +485,11 @@ export default function EventDetailsPage() {
 											>
 												<div className="flex flex-col justify-center items-center py-3">
 													<IoPerson className="text-[80px] rounded-full bg-slate-500" />
-												<p className="py-3">
-													{typeof c === "string" || typeof c === "number"
-														? c
-														: JSON.stringify(c)}
-												</p>
+													<p className="py-3">
+														{typeof c === "string" || typeof c === "number"
+															? c
+															: JSON.stringify(c)}
+													</p>
 												</div>
 											</div>
 										))}
@@ -599,6 +664,95 @@ export default function EventDetailsPage() {
 									</HStack>
 								)}
 							</VStack>
+							<Modal isOpen={isEditOpen} onClose={() => setEditOpen(false)} size="xl" isCentered>
+								<ModalOverlay />
+								<ModalContent bg="#10121a" color="white">
+									<ModalHeader>Edit Event</ModalHeader>
+									<ModalCloseButton />
+
+									<ModalBody>
+										<Stack spacing={4}>
+											<FormControl>
+												<FormLabel>Event ID</FormLabel>
+												<Input value={editForm.eventId} disabled />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Title</FormLabel>
+												<Input name="title" value={editForm.title} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Description</FormLabel>
+												<Input name="description" value={editForm.description} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Category</FormLabel>
+												<Select value={editForm.category} disabled>
+													<option style={{ color: "black" }}>{editForm.category}</option>
+												</Select>
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Sub Category</FormLabel>
+												<Input name="subCategory" value={editForm.subCategory} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Banner URL</FormLabel>
+												<Input name="bannerUrl" value={editForm.bannerUrl} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Thumbnail URL</FormLabel>
+												<Input name="thumbnailUrl" value={editForm.thumbnailUrl} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>Start Time</FormLabel>
+												<Input type="datetime-local" name="startTime" value={editForm.startTime} onChange={handleEditChange} />
+											</FormControl>
+
+											<FormControl>
+												<FormLabel>End Time</FormLabel>
+												<Input type="datetime-local" name="endTime" value={editForm.endTime} onChange={handleEditChange} />
+											</FormControl>
+										</Stack>
+									</ModalBody>
+
+									<ModalFooter>
+										<Button colorScheme="gray" mr={3} onClick={() => setEditOpen(false)}>
+											Cancel
+										</Button>
+										<Button colorScheme="yellow" onClick={handleSubmitEdit}>
+											Save Changes
+										</Button>
+									</ModalFooter>
+								</ModalContent>
+							</Modal>
+
+							{/* ---------------------------- DELETE MODAL ---------------------------- */}
+							<Modal isOpen={isDeleteOpen} onClose={() => setDeleteOpen(false)} isCentered>
+								<ModalOverlay />
+								<ModalContent bg="#1a1c25" color="white">
+									<ModalHeader>Confirm Delete</ModalHeader>
+									<ModalCloseButton />
+
+									<ModalBody>
+										<Text>Are you sure you want to delete this event?</Text>
+									</ModalBody>
+
+									<ModalFooter>
+										<Button mr={3} onClick={() => setDeleteOpen(false)}>
+											Cancel
+										</Button>
+										<Button colorScheme="red" onClick={handleConfirmDelete}>
+											Delete
+										</Button>
+									</ModalFooter>
+								</ModalContent>
+							</Modal>
 						</Box>
 					</Box>
 				</Flex>

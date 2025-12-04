@@ -15,7 +15,6 @@ import {
 import { Link } from "react-router-dom";
 import { BsInstagram, BsTwitterX, BsGithub } from "react-icons/bs";
 import { FaLinkedinIn } from "react-icons/fa";
-import { toast } from "react-toastify";
 
 export default function FooterCom() {
   return (
@@ -93,7 +92,7 @@ export default function FooterCom() {
                 bg="gray.800"
                 _focus={{ bg: "gray.700" }}
               />
-              <Button colorScheme="teal" onClick={()=>toast.success("Subscribed..")}>Subscribe</Button>
+              <Button colorScheme="teal">Subscribe</Button>
             </HStack>
           </Box>
 

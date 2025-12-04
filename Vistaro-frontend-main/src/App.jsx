@@ -13,11 +13,23 @@ import Offers from "./pages/Offers";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import { Bounce, ToastContainer } from "react-toastify";
-import HomeMovies from "./components/HomeMovies";
 import "react-toastify/dist/ReactToastify.css";
 import EventDetailsPage from "./pages/EventDetailsPage";
+import EventBookingPage from "./pages/EventBookingPage";
+import BookingConfirmPage from "./pages/BookingConfirmPage";
+import Events from "./pages/Events";
+import Movies from "./pages/Movies";
+import Sports from "./pages/Sports";
+import { useDispatch } from "react-redux";
+import { loadUserFromStorage } from "./redux/userSlice";
+import { useEffect } from "react";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(loadUserFromStorage());
+  }, []);
   return (
     <ChakraProvider>
       <Header />
@@ -32,7 +44,12 @@ function App() {
         <Route path="/offers" element={<Offers />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-        <Route path="/event/:eventId" element={<EventDetailsPage/>}/>
+        <Route path="/events" element={<Events />} />
+        <Route path="/movies" element={<Movies />} />
+        <Route path="/sports" element={<Sports />} />
+        <Route path="/event/:eventId" element={<EventDetailsPage />} />
+        <Route path="/eventslots/:eventId" element={<EventBookingPage />} />
+        <Route path="/booking/confirm" element={<BookingConfirmPage />} />
       </Routes>
       <Footer />
       <ToastContainer

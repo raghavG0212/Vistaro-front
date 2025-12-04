@@ -34,3 +34,7 @@ export const addEvent = (event) =>
 // Update event
 export const updateEvent = (id, event) =>
   axios.put(`${API_BASE}/${id}`, event);
+
+export const deleteEvent =(id)=>{
+  axios.delete(`${API_BASE}/${id}`);
+}
