@@ -23,6 +23,7 @@ import Sports from "./pages/Sports";
 import { useDispatch } from "react-redux";
 import { loadUserFromStorage } from "./redux/userSlice";
 import { useEffect } from "react";
+import EditProfilePage from "./pages/EditProfilePage";
 
 function App() {
   const dispatch = useDispatch();
@@ -47,6 +48,7 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/movies" element={<Movies />} />
         <Route path="/sports" element={<Sports />} />
+        <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/event/:eventId" element={<EventDetailsPage />} />
         <Route path="/eventslots/:eventId" element={<EventBookingPage />} />
         <Route path="/booking/confirm" element={<BookingConfirmPage />} />

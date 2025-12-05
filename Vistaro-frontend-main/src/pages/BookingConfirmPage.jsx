@@ -41,6 +41,7 @@ import { getSlotsByEventId } from "../apis/eventSlotApi";
 import { getSeatsForSlot, unlockSeats } from "../apis/seatApi";
 import { getFoodsBySlot } from "../apis/foodApi";
 import { createBooking } from "../apis/bookingApi";
+import { useSelector } from "react-redux";
 
 const MotionBox = motion(Box);
 
@@ -48,7 +49,7 @@ export default function BookingConfirmPage() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const { isOpen, onOpen, onClose } = useDisclosure();
-
+	const userId = useSelector((state)=> state.user.userId);
 	// data passed from EventBookingPage
 	const state = location.state || {};
 	const {
@@ -224,12 +225,8 @@ export default function BookingConfirmPage() {
 
 		try {
 			setSubmitting(true);
-
-			// TEMP: dummy user (replace later with real userId)
-			const dummyUserId = 1;
-
 			const payload = {
-				userId: dummyUserId,
+				userId,
 				slotId,
 				seatIds,
 				offerCode: offerCode || null,

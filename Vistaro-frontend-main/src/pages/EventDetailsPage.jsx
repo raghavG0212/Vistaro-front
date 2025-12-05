@@ -183,7 +183,7 @@ export default function EventDetailsPage() {
 			await deleteEvent(eventId);
 			toast.success("Event deleted successfully!");
 			setDeleteOpen(false);
-			navigate("/events");
+			navigate("/");
 		} catch (err) {
 			toast.error("Delete failed");
 		}

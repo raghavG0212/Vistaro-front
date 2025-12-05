@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
 	isAuthenticated: false,
 	token: null,
+	name: null,
 	email: null,
 	role: null,
 	city: null,
@@ -14,10 +15,11 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		setUser: (state, action) => {
-			const { token, email, role, city, userId } = action.payload;
+			const { token,name, email, role, city, userId } = action.payload;
 
 			state.isAuthenticated = true;
 			state.token = token;
+			state.name = name;
 			state.email = email;
 			state.role = role;
 			state.city = city;
@@ -26,7 +28,7 @@ const userSlice = createSlice({
 			// Persist to localStorage
 			localStorage.setItem(
 				"vistaroAuth",
-				JSON.stringify({ token, email, role, city, userId })
+				JSON.stringify({ token,name, email, role, city, userId })
 			);
 		},
 
@@ -38,6 +40,7 @@ const userSlice = createSlice({
 
 			state.isAuthenticated = true;
 			state.token = parsed.token;
+			state.name = parsed.name;
 			state.email = parsed.email;
 			state.role = parsed.role;
 			state.city = parsed.city;

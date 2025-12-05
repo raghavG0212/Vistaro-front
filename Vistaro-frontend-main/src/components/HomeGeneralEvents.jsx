@@ -32,7 +32,7 @@ export default function HomeGeneralEvents() {
 	const navigate = useNavigate();
 	const selectedCity = useSelector((s) => s.city?.selectedCity);
 	const cityName = selectedCity?.city || "";
-
+	const isAdmin = useSelector((state)=>state.user?.role)=== "ADMIN" ? true : false;
 	const [events, setEvents] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -157,7 +157,7 @@ export default function HomeGeneralEvents() {
 										navigate(`/event/${e.eventId}`);
 									}}
 								>
-									Book
+									{isAdmin ? "Manage" : "Book"}
 								</Button>
 							</Box>
 						</Box>

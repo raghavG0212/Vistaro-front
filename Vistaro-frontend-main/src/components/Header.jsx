@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import {
 	Box, HStack, Text, Button, Menu, MenuButton, MenuList, MenuItem,
@@ -11,23 +10,20 @@ import {
 } from "@chakra-ui/react";
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
 import { FiSearch, FiMenu } from "react-icons/fi";
 import { IoLocationSharp } from "react-icons/io5";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setCity } from "../redux/citySlice";
-
-import CreateMoviePage from "./CreateMoviePage";
-import CreateSportPage from "./CreateSportPage";
-import CreateGeneralEventPage from "./CreateGeneralEventPage";
+import { logoutUser } from "../redux/userSlice";
+import { persistor } from "../redux/store";
 
 import axios from "axios";
 import { searchByTitle } from "../apis/eventApi";
-import { logoutUser } from "../redux/userSlice";
-import { persistor } from "../redux/store";
 import { toast } from "react-toastify";
+import AdminCreateFlow from "./AdminCreateFlow";
+
 
 export default function Header() {
 	const navigate = useNavigate();
@@ -43,10 +39,8 @@ export default function Header() {
 	const isAdmin = isLoggedIn && role === "ADMIN";
 	const isNormalUser = isLoggedIn && role === "USER";
 
-	// current city shown in UI
 	const currentCityName = storedCity?.city || userCity || "Goa";
 
-	// when user.city is present & no city selected yet, initialize citySlice from user
 	useEffect(() => {
 		if (userCity && !storedCity) {
 			dispatch(setCity({ id: null, city: userCity }));
@@ -58,16 +52,17 @@ export default function Header() {
 		{ id: 1, city: "Mumbai" }, { id: 2, city: "Delhi" },
 		{ id: 3, city: "Bengaluru" }, { id: 4, city: "Chennai" },
 		{ id: 5, city: "Kolkata" }, { id: 6, city: "Hyderabad" },
-		{ id: 7, city: "Noida" }, { id: 8, city: "Pune" },
-		{ id: 9, city: "Chandigarh" }, { id: 10, city: "Goa" }
+		{ id: 7, city: "Jaipur" }, { id: 8, city: "Agra" },
+		{ id: 9, city: "Lucknow" }, { id: 10, city: "Goa" }
 	];
-	const dummySymbols = ["🏠", "🏛", "💻", "🏝", "🏯", "🏰", "🕌", "🌆", "🏖", "🌇"];
 
+	const dummySymbols = ["🏠", "🏛", "💻", "🏝", "🏯", "🏰", "🕌", "🌆", "🏖", "🌇"];
 	const [cityModalOpen, setCityModalOpen] = useState(false);
 
 	// ---------------- CREATE MODAL ----------------
 	const [createOpen, setCreateOpen] = useState(false);
 	const [createType, setCreateType] = useState("");
+
 	const openCreate = (type) => {
 		setCreateType(type);
 		setCreateOpen(true);
@@ -87,16 +82,10 @@ export default function Header() {
 	const [cityEventIds, setCityEventIds] = useState(new Set());
 	const panelRef = useRef(null);
 
-	// helper for disabled sidebar links
 	const SidebarNavItem = ({ to, disabled, children }) => {
 		if (disabled) {
 			return (
-				<Text
-					as="span"
-					color="gray.500"
-					opacity={0.6}
-					cursor="not-allowed"
-				>
+				<Text as="span" color="gray.500" opacity={0.6} cursor="not-allowed">
 					{children}
 				</Text>
 			);
@@ -108,7 +97,7 @@ export default function Header() {
 		);
 	};
 
-	// Load event slots for city filtering
+	// load event slots for city
 	useEffect(() => {
 		const cityName = storedCity?.city || userCity;
 		if (!cityName) return;
@@ -116,7 +105,7 @@ export default function Header() {
 		const load = async () => {
 			try {
 				const res = await axios.get("/api/v1/eventslot", {
-					params: { city: cityName }
+					params: { city: cityName },
 				});
 				setCityEventIds(new Set(res.data?.map((s) => s.eventId)));
 			} catch {
@@ -127,7 +116,6 @@ export default function Header() {
 		load();
 	}, [storedCity, userCity]);
 
-	// Click outside closes search panel
 	useEffect(() => {
 		const handler = (e) => {
 			if (panelRef.current && !panelRef.current.contains(e.target))
@@ -138,7 +126,6 @@ export default function Header() {
 		return () => document.removeEventListener("mousedown", handler);
 	}, []);
 
-	// Fetch search results
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setResults({ movies: [], events: [], sports: [] });
@@ -162,15 +149,13 @@ export default function Header() {
 			setResults({
 				movies: data.filter((e) => e.category === "MOVIE"),
 				events: data.filter((e) => e.category === "EVENT"),
-				sports: data.filter((e) => e.category === "SPORT")
+				sports: data.filter((e) => e.category === "SPORT"),
 			});
-
 		} catch {
 			setResults({ movies: [], events: [], sports: [] });
 		}
 	};
 
-	// Close search on navigation & clear on home
 	useEffect(() => {
 		setShowPanel(false);
 
@@ -182,7 +167,7 @@ export default function Header() {
 
 	const handleLogout = () => {
 		dispatch(logoutUser());
-		persistor.purge(); // clear redux-persist storage
+		persistor.purge();
 		navigate("/login");
 		setLogoutOpen(false);
 		setShowPanel(false);
@@ -190,9 +175,8 @@ export default function Header() {
 		toast.success("Logged out.");
 	};
 
-	// bookings + profile enable/disable logic
-	const bookingsDisabled = !isLoggedIn || isAdmin; // guest OR admin → disabled
-	const profileDisabled = !isLoggedIn;             // guest → disabled, user/admin → enabled
+	const bookingsDisabled = !isLoggedIn || isAdmin;
+	const profileDisabled = !isLoggedIn;
 
 	return (
 		<>
@@ -207,17 +191,14 @@ export default function Header() {
 				zIndex={1000}
 			>
 				<div className="flex items-center justify-between">
-
-					{/* LOGO */}
 					<Link to="/">
 						<img
 							src="/Logo-final-2.png"
 							alt="Vistaro"
-							style={{ height: "64px", width: "150px", objectFit: "contain" }}
+							style={{ height: "100px", width: "150px", objectFit: "contain" }}
 						/>
 					</Link>
 
-					{/* NAV LINKS */}
 					<div className="hidden md:flex gap-6 text-gray-300 font-medium">
 						<Link to="/">Home</Link>
 						<Link to="/events">Events</Link>
@@ -249,10 +230,9 @@ export default function Header() {
 						</InputGroup>
 					</Box>
 
-					{/* RIGHT SIDE (CITY → CREATE → LOGIN → SIDEBAR) */}
+					{/* RIGHT SIDE */}
 					<HStack spacing={3}>
-
-						{/* CITY */}
+						{/* CITY SELECTOR */}
 						<Button
 							size="sm"
 							bg="#2bb0a0"
@@ -266,38 +246,25 @@ export default function Header() {
 							</HStack>
 						</Button>
 
-						{/* CREATE (Admin only) */}
+						{/* CREATE EVENT (ADMIN ONLY) */}
 						{isAdmin && (
-							<Menu>
-								<MenuButton
-									as={Button}
-									size="sm"
-									bg="gray.800"
-									color="white"
-									rightIcon={<ChevronDownIcon />}
-									_hover={{ bg: "gray.600" }}
-								>
-									Create Event
-								</MenuButton>
-
-								<MenuList bg="gray.800" borderColor="gray.700" color="white">
-									<MenuItem onClick={() => openCreate("MOVIE")}>Movie</MenuItem>
-									<MenuItem onClick={() => openCreate("SPORT")}>Sport</MenuItem>
-									<MenuItem onClick={() => openCreate("EVENT")}>Event</MenuItem>
-								</MenuList>
-							</Menu>
+							<Button
+								size="sm"
+								bg="gray.800"
+								color="white"
+								_hover={{ bg: "gray.600" }}
+								onClick={() => setCreateOpen(true)}
+							>
+								Create Event
+							</Button>
 						)}
 
-						{/* LOGIN (show only when not logged in) */}
 						{!isLoggedIn && (
 							<Link to="/login">
-								<Button size="sm" bg="white" color="black">
-									Sign In
-								</Button>
+								<Button size="sm" bg="white" color="black">Sign In</Button>
 							</Link>
 						)}
 
-						{/* SIDEBAR BUTTON */}
 						<Button
 							bg="gray.700"
 							color="white"
@@ -306,12 +273,11 @@ export default function Header() {
 						>
 							<FiMenu size={20} />
 						</Button>
-
 					</HStack>
 				</div>
 			</Box>
 
-			{/* SEARCH DROPDOWN */}
+			{/* SEARCH RESULTS PANEL */}
 			{showPanel && searchText.trim() && (
 				<Box
 					ref={panelRef}
@@ -330,7 +296,6 @@ export default function Header() {
 					<Divider my={4} />
 
 					<HStack align="start" spacing={10}>
-						{/* MOVIES */}
 						<Box flex="1">
 							<Text fontWeight="bold">Movies</Text>
 							<VStack align="start" mt={3}>
@@ -347,7 +312,6 @@ export default function Header() {
 							</VStack>
 						</Box>
 
-						{/* EVENTS */}
 						<Box flex="1">
 							<Text fontWeight="bold">Events</Text>
 							<VStack align="start" mt={3}>
@@ -364,7 +328,6 @@ export default function Header() {
 							</VStack>
 						</Box>
 
-						{/* SPORTS */}
 						<Box flex="1">
 							<Text fontWeight="bold">Sports</Text>
 							<VStack align="start" mt={3}>
@@ -393,9 +356,7 @@ export default function Header() {
 			>
 				<ModalOverlay />
 				<ModalContent bg="white" color="black" p={6} borderRadius="lg">
-					<Text fontSize="2xl" fontWeight="bold" mb={4}>
-						Select Your City
-					</Text>
+					<Text fontSize="2xl" fontWeight="bold" mb={4}>Select Your City</Text>
 
 					<Divider mb={4} />
 
@@ -423,27 +384,20 @@ export default function Header() {
 				</ModalContent>
 			</Modal>
 
-			{/* CREATE MODAL */}
+			{/* ADMIN CREATE FLOW */}
 			<Modal
 				isOpen={createOpen}
-				onClose={() => {
-					setCreateOpen(false);
-					setCreateType("");
-				}}
+				onClose={() => setCreateOpen(false)}
 				size="5xl"
 				isCentered
 			>
 				<ModalOverlay />
-				<ModalContent bg="gray.800" color="white">
-					{createType === "MOVIE" && (
-						<CreateMoviePage onClose={() => setCreateOpen(false)} />
-					)}
-					{createType === "SPORT" && (
-						<CreateSportPage onClose={() => setCreateOpen(false)} />
-					)}
-					{createType === "EVENT" && (
-						<CreateGeneralEventPage onClose={() => setCreateOpen(false)} />
-					)}
+				<ModalContent bg="gray.900" color="white">
+					<AdminCreateFlow
+						isOpen={createOpen}
+						onClose={() => setCreateOpen(false)}
+						selectedCity={currentCityName}
+					/>
 				</ModalContent>
 			</Modal>
 
@@ -461,7 +415,6 @@ export default function Header() {
 					<DrawerCloseButton />
 
 					<DrawerBody mt={10}>
-						{/* Logo */}
 						<Center>
 							<img
 								src="/Logo-final-2.png"
@@ -469,19 +422,17 @@ export default function Header() {
 							/>
 						</Center>
 
-						{/* User Info */}
 						<VStack spacing={1} mb={6}>
 							<Text fontSize="xl" fontWeight="bold">
-								{isLoggedIn ? user.email : "Guest"}
+								{isLoggedIn ? user.name : "Guest"}
 							</Text>
 							<Text fontSize="sm" color="gray.300">
-								{isLoggedIn ? user.role : ""}
+								{isLoggedIn ? user.email : ""}
 							</Text>
 						</VStack>
 
 						<Divider borderColor="gray.600" my={4} />
 
-						{/* Navigation Links */}
 						<VStack align="start" spacing={4} fontSize="lg">
 							<Link to="/" onClick={() => setSidebarOpen(false)}>Home</Link>
 							<Link to="/events" onClick={() => setSidebarOpen(false)}>Events</Link>
@@ -490,15 +441,12 @@ export default function Header() {
 							<Link to="/offers" onClick={() => setSidebarOpen(false)}>Offers</Link>
 							<Link to="/about" onClick={() => setSidebarOpen(false)}>About</Link>
 
-							<SidebarNavItem
-								to="/bookings"
-								disabled={bookingsDisabled}
-							>
+							<SidebarNavItem to="/bookings" disabled={bookingsDisabled}>
 								View Your Bookings
 							</SidebarNavItem>
 
 							<SidebarNavItem
-								to="/profile"
+								to="/profile/edit"
 								disabled={profileDisabled}
 							>
 								Update Profile
@@ -507,7 +455,6 @@ export default function Header() {
 
 						<Divider borderColor="gray.600" my={6} />
 
-						{/* Bottom button – Sign In or Logout */}
 						{!isLoggedIn ? (
 							<Link to="/login" onClick={() => setSidebarOpen(false)}>
 								<Button
