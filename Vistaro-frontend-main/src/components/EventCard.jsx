@@ -3,6 +3,7 @@
 import React from "react";
 import { Box, Image, Text, Button } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const fmtDateOnly = (iso) => {
   if (!iso) return "TBD";
