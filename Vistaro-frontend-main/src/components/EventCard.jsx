@@ -15,6 +15,7 @@ const fmtDateOnly = (iso) => {
 
 export default function EventCard({ event }) {
   const navigate = useNavigate();
+  const isAdmin = useSelector((state)=>state.user?.role)=== "ADMIN" ? true : false;
 
   return (
     <Box
@@ -76,7 +77,7 @@ export default function EventCard({ event }) {
               navigate(`/event/${event.eventId}`);
             }}
           >
-            Book
+            {isAdmin ? "Manage" : "Book"}
           </Button>
         </Box>
       </Box>
