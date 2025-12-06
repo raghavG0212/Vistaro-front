@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import HomeMainSlider from "../components/HomeMainSlider";
 import { searchByCategory, searchBySubCategory } from "../apis/eventApi";
 import EventCard from "../components/EventCard";
+import HeadingComponent from "../components/HeadingComponent";
 
 export default function Sports() {
   const city = useSelector((s) => s.city?.selectedCity?.city || "");
@@ -43,7 +44,8 @@ export default function Sports() {
     <Box bg="gray.900" color="white" px={6} py={8} minH="100vh">
       <Box minH="320px"><HomeMainSlider /></Box>
 
-      <Heading mb={2}>Sports in {city}</Heading>
+      <HeadingComponent mb={2}>Sports in {city}</HeadingComponent>
+      {/* //--  change done to make the heading look like home page 👆*/}
       <Text color="gray.400" mb={6}>Watch your favorite sports live.</Text>
 
       {/* FILTER */}
@@ -54,17 +56,17 @@ export default function Sports() {
           onChange={(e) => setType(e.target.value)}
           bg="gray.800"
           color="white"
-           w="220px"
+          w="220px"
           borderColor="gray.600"
-          _hover={{borderColor: "teal.300"}}
-          _focus={{borderColor: "teal.300", boxShadow: "0 0 0 1px teal"}}
-           sx={{
-    option: {
-      background: "#1A202C",  // Dark dropdown bg
-      color: "white",         // White text
-      padding: "10px",
-    },
-  }}
+          _hover={{ borderColor: "teal.300" }}
+          _focus={{ borderColor: "teal.300", boxShadow: "0 0 0 1px teal" }}
+          sx={{
+            option: {
+              background: "#1A202C",  // Dark dropdown bg
+              color: "white",         // White text
+              padding: "10px",
+            },
+          }}
         >
           <option value="Cricket">Cricket</option>
           <option value="Football">Football</option>
@@ -82,7 +84,8 @@ export default function Sports() {
       ) : sports.length === 0 ? (
         <Center py={20}><Text>No sports events available.</Text></Center>
       ) : (
-        <Grid templateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap={6}>
+        <Grid templateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap={2}>
+          {/* change this to update the gap in the cards on the page 👆 */}
           {sports.map((s) => (
             <EventCard key={s.eventId} event={s} />
           ))}

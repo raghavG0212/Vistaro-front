@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import HomeMainSlider from "../components/HomeMainSlider";
 import EventCard from "../components/EventCard";
 import { searchByCategory } from "../apis/eventApi";
+import HeadingComponent from "../components/HeadingComponent";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -54,7 +55,8 @@ export default function Events() {
     <Box bg="gray.900" color="white" px={6} py={8} minH="100vh">
       <Box minH="320px"><HomeMainSlider /></Box>
 
-      <Heading mb={2}>Events in {city}</Heading>
+      <HeadingComponent mb={2}>Events in {city}</HeadingComponent>
+      {/* //--  change done to make the heading look like home page 👆*/}
       <Text color="gray.400" mb={6}>Concerts, Standup Comedy & More</Text>
 
       {/* FILTER */}
@@ -66,19 +68,24 @@ export default function Events() {
           value={typeFilter}
           w="220px"
           borderColor="gray.600"
-          _hover={{borderColor: "teal.300"}}
-          _focus={{borderColor: "teal.300", boxShadow: "0 0 0 1px teal"}}
-           sx={{
-    option: {
-      background: "#1A202C",  // Dark dropdown bg
-      color: "white",         // White text
-      padding: "10px",
-    },
-  }}
+          _hover={{ borderColor: "teal.300" }}
+          _focus={{ borderColor: "teal.300", boxShadow: "0 0 0 1px teal" }}
+          sx={{
+            option: {
+              background: "#1A202C",  // Dark dropdown bg
+              color: "white",         // White text
+              padding: "10px",
+            },
+          }}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
-          <option value="Live Concert">Concert</option>
+          <option value="Concert">Concert</option>
           <option value="Stand up comedy">Standup Comedy</option>
+          <option value="Fashion">Fashion</option>
+          <option value="Food Fest">Food Fest</option>
+          <option value="Exhibition">Exhibition</option>
+          <option value="Cultural">Cultural</option>
+
         </Select>
       </Box>
 
@@ -91,7 +98,8 @@ export default function Events() {
       ) : filtered.length === 0 ? (
         <Center py={20}><Text>No events available.</Text></Center>
       ) : (
-        <Grid templateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap={6}>
+        <Grid templateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap={2}>
+          {/* change this to update the gap in the cards on the page 👆 */}
           {filtered.map((e) => (
             <EventCard key={e.eventId} event={e} />
           ))}
