@@ -1,10 +1,10 @@
-export default function HeadingComponent({ heading }) {
+export default function HeadingComponent({ children, heading, ...props }) {
 	return (
 		<>
-			<div className="heading-wrapper">
-				<div className="heading-line" />
-				<h1 className="heading-title">{heading}</h1>
-				<div className="heading-line" />
+      <div className="heading-wrapper" {...props}>
+        <div className="heading-line" />
+        <h1 className="heading-title">{children || heading}</h1>
+        <div className="heading-line" />
 			</div>
 
 			{/* ADVANCED CSS */}
